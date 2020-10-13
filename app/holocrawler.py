@@ -213,11 +213,16 @@ class HoloCrawler:
 
     def register_holodule_list(self, holodule_list):
         try:
+            # MongoDB のコレクションからの削除と挿入
             client = MongoClient(self.__mongodb_host)
             db = client.holoduledb
             db.authenticate(name=self.__mongodb_user,password=self.__mongodb_password)
             collection = db.holodules
             for holodule in holodule_list:
+                # video_id を条件としたドキュメントの削除
+                video_id = holodule.video_id
+                collection.delete_one( {"video_id":video_id} )
+                # ドキュメントの挿入
                 doc = holodule.to_doc()
                 collection.insert_one(doc)
         except OSError as err:
