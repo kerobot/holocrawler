@@ -1,7 +1,10 @@
-__pycache__
-/venv/
-.venv/
-app.egg-info
+__pycache__/
+*.egg-info/
+*.egg
+.env
+.venv
+env/
+venv/
+.python-version
 /geckodriver.log
 /geckodriver.exe
-.env
