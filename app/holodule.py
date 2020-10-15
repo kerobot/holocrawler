@@ -1,3 +1,7 @@
+"""
+ホロジュールの配信情報＋Youtubeの動画情報含む
+"""
+
 class Holodule:
     codes = {
         "ときのそら"  : "HL0001",
@@ -103,6 +107,7 @@ class Holodule:
     def description(self, description):
         self.__description = description
 
+    # ドキュメントへ変換
     def to_doc(self):
         doc = { 'key': str(self.key),
                 'video_id': str(self.video_id),

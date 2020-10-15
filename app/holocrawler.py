@@ -47,8 +47,8 @@ class HoloCrawler:
         # mongodbの接続情報
         self.__mongodb_host = "mongodb://%s/" % (settings.mongodb_host)
 
+    # Firefoxプロファイルの設定
     def __setup_profile(self):
-        # Firefoxプロファイルの設定
         profile = webdriver.FirefoxProfile()
         # その他（参考）
         # profile.set_preference("browser.download.folderList", 1)
@@ -63,13 +63,14 @@ class HoloCrawler:
         # profile.set_preference("browser.download.manager.closeWhenDone", False)
         return profile
 
+    # Firefoxオプションの設定
     def __setup_options(self):
-        # Firefoxオプションの設定
         options = Options()
         # ヘッドレスモードとする
         options.add_argument("--headless")
         return options
 
+    # ホロジュールの取得
     def __get_holodule(self):
         # 取得対象の URL に遷移
         self.__driver.get(self.__holodule_url)
@@ -137,6 +138,7 @@ class HoloCrawler:
                         holodule_list.append(holodule)
         return holodule_list
 
+    # Youtube 動画情報の取得
     def __get_youtube_video_info(self, youtube_url):
         # Youtube の URL から ID を取得
         match_video = re.search(r"^[^v]+v=(.{11}).*", youtube_url)
@@ -162,6 +164,7 @@ class HoloCrawler:
             return (vid, title, description)
         return ("","","")
 
+    # ホロジュールのスクレイピングと Youtube 動画情報から、配信情報リストの取得
     def get_holodule_list(self):
         try:
             # プロファイルのセットアップ
@@ -195,6 +198,7 @@ class HoloCrawler:
             # ドライバを閉じる
             self.__driver.close()
 
+    # 配信情報リストのCSV出力
     def output_holodule_list(self, holodule_list, filepath):
         try:
             # CSV出力(BOM付きUTF-8)
@@ -211,6 +215,7 @@ class HoloCrawler:
         finally:
             pass
 
+    # 配信情報リストのDB登録
     def register_holodule_list(self, holodule_list):
         try:
             # MongoDB のコレクションからの削除と挿入
