@@ -39,7 +39,7 @@ class HoloCrawler:
         # ホロジュールの URL
         self.__holodule_url = settings.holodule_url
         # YouTube Data API v3 を利用するための準備
-        self.__youtube = build(settings.api_service_name, settings.api_version, developerKey=settings.api_key)
+        self.__youtube = build(settings.api_service_name, settings.api_version, developerKey=settings.api_key, cache_discovery=False)
         # mongodbのユーザー
         self.__mongodb_user = quote_plus(settings.mongodb_user)
         # mongodbのパスワード
