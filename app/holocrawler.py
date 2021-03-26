@@ -81,8 +81,8 @@ class HoloCrawler:
         # ページソースの解析（パーサとして lxml を指定）
         soup = BeautifulSoup(html, "lxml")
         # タイトルの取得（確認用）
-        body = soup.find("body")
-        title = body.find("title").text
+        head = soup.find("head")
+        title = head.find("title").text
         print(title)
         # TODO : ここからはページの構成に合わせて決め打ち = ページの構成が変わったら動かない
         # スケジュールの取得
