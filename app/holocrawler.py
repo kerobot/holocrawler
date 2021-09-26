@@ -46,6 +46,8 @@ class HoloCrawler:
         self.__mongodb_password = quote_plus(settings.mongodb_password)
         # mongodbの接続情報
         self.__mongodb_host = "mongodb://%s/" % (settings.mongodb_host)
+        # youtube url の判定パターン
+        self.__youtube_url_pattern = settings.youtube_url_pattern
 
     # Firefoxプロファイルの設定
     def __setup_profile(self):
@@ -114,12 +116,16 @@ class HoloCrawler:
                     holodule = Holodule()
                     # Youtube URL
                     youtube_url = thumbnail.get("href")
-                    if youtube_url is not None:
+                    if youtube_url is None or re.match(self.__youtube_url_pattern, youtube_url) is None:
+                        continue
+                    else:
                         holodule.url = youtube_url
                         # print(holodule.url)
                     # 時刻（先に取得しておいた日付と合体）
                     div_time = thumbnail.find("div", class_="col-5 col-sm-5 col-md-5 text-left datetime")
-                    if div_time is not None:
+                    if div_time is None:
+                        continue
+                    else:
                         time_text = div_time.text.strip()
                         match_time = re.search(r"[0-9]{1,2}:[0-9]{1,2}", time_text)
                         times = match_time.group(0).split(":")
@@ -130,7 +136,9 @@ class HoloCrawler:
                         # print(holodule.datetime)
                     # ライバーの名前
                     div_name = thumbnail.find("div", class_="col text-right name")
-                    if div_name is not None:
+                    if div_name is None:
+                        continue
+                    else:
                         holodule.name = div_name.text.strip()
                         # print(holodule.name)
                     # リストに追加
@@ -140,29 +148,34 @@ class HoloCrawler:
 
     # Youtube 動画情報の取得
     def __get_youtube_video_info(self, youtube_url):
-        # Youtube の URL から ID を取得
-        match_video = re.search(r"^[^v]+v=(.{11}).*", youtube_url)
-        video_id = match_video.group(1)
-        # Youtube はスクレイピングを禁止しているので YouTube Data API (v3) で情報を取得
-        search_response = self.__youtube.videos().list(
-            # 結果として snippet のみを取得
-            part="snippet",
-            # 検索条件は id
-            id=video_id,
-            # 1件のみ取得
-            maxResults=1
-        ).execute()
-        # 検索結果から情報を取得
-        for search_result in search_response.get("items", []):
-            # id
-            vid = search_result["id"]
-            # タイトル
-            title = search_result["snippet"]["title"]
-            # 説明
-            description = search_result["snippet"]["description"]
-            # IDとタイトルと説明を返却
-            return (vid, title, description)
-        return ("","","")
+        try:
+            # Youtube の URL から ID を取得
+            match_video = re.search(r"^[^v]+v=(.{11}).*", youtube_url)
+            video_id = match_video.group(1)
+            # Youtube はスクレイピングを禁止しているので YouTube Data API (v3) で情報を取得
+            search_response = self.__youtube.videos().list(
+                # 結果として snippet のみを取得
+                part="snippet",
+                # 検索条件は id
+                id=video_id,
+                # 1件のみ取得
+                maxResults=1
+            ).execute()
+            # 検索結果から情報を取得
+            for search_result in search_response.get("items", []):
+                # id
+                vid = search_result["id"]
+                # タイトル
+                title = search_result["snippet"]["title"]
+                # 説明
+                description = search_result["snippet"]["description"]
+                # IDとタイトルと説明を返却
+                return (vid, title, description)
+            return ("","","")
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+            print(youtube_url)
+            raise
 
     # ホロジュールのスクレイピングと Youtube 動画情報から、配信情報リストの取得
     def get_holodule_list(self):

@@ -17,6 +17,7 @@ class Settings:
         self.__mongodb_user = os.environ.get("MONGODB_USER")
         self.__mongodb_password = os.environ.get("MONGODB_PASSWORD")
         self.__mongodb_host = os.environ.get("MONGODB_HOST")
+        self.__youtube_url_pattern = os.environ.get("YOUTUBE_URL_PATTERN")
 
     # ホロジュールのURL
     @property
@@ -52,6 +53,11 @@ class Settings:
     @property
     def mongodb_host(self):
         return self.__mongodb_host
+
+    # Youtube URL として判定するパターン
+    @property
+    def youtube_url_pattern(self):
+        return self.__youtube_url_pattern
 
     # 指定したURLにアクセスできるかをチェック
     def __check_url(self, url):
