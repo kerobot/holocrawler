@@ -103,9 +103,9 @@ class HoloCrawler:
                 month = int(dates[0])
                 day = int(dates[1])
                 year = today.year
-                if month < today.month or ( month == 12 and today.month == 1 ):
+                if month == 12 and today.month == 1:
                     year = year - 1
-                elif month > today.month or ( month == 1 and today.month == 12 ):
+                elif month == 1 and today.month == 12:
                     year = year + 1
                 date_string = f"{year}/{month}/{day}"
                 # print(date_string)
