@@ -4,10 +4,12 @@
 
 class Holodule:
     codes = {
+        "ホロライブ" : "HL0000",
         "ときのそら"  : "HL0001",
         "ロボ子さん" : "HL0002",
         "さくらみこ" : "HL0003",
         "星街すいせい" : "HL0004",
+        "AZKi" : "HL0005",
         "夜空メル" : "HL0101",
         "アキ・ローゼンタール" : "HL0102",
         "赤井はあと" : "HL0103",
@@ -54,9 +56,14 @@ class Holodule:
     # キー
     @property
     def key(self):
-        _code = Holodule.codes[self.name] if self.name in Holodule.codes else ""
+        _code = self.code;
         _dttm = self.datetime.strftime("%Y%m%d_%H%M%S") if self.datetime is not None else ""
         return _code + "_" + _dttm if ( len(_code) > 0 and len(_dttm) > 0 ) else ""
+
+    # コード
+    @property
+    def code(self):
+        return Holodule.codes[self.name] if self.name in Holodule.codes else ""
 
     # video_id
     @property
@@ -115,6 +122,7 @@ class Holodule:
     # ドキュメントへ変換
     def to_doc(self):
         doc = { 'key': str(self.key),
+                'code' : str(self.code),
                 'video_id': str(self.video_id),
                 'datetime' : str(self.datetime.strftime("%Y%m%d %H%M%S")),
                 'name' : str(self.name),
