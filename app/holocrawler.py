@@ -122,7 +122,7 @@ class HoloCrawler:
                         holodule.url = youtube_url
                         # print(holodule.url)
                     # 時刻（先に取得しておいた日付と合体）
-                    div_time = thumbnail.find("div", class_="col-5 col-sm-5 col-md-5 text-left datetime")
+                    div_time = thumbnail.find("div", class_="col-4 col-sm-4 col-md-4 text-left datetime")
                     if div_time is None:
                         continue
                     else:
