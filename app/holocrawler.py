@@ -20,7 +20,7 @@ import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -31,6 +31,8 @@ from urllib.parse import quote_plus
 from bson.objectid import ObjectId
 from app.settings import Settings
 from app.holodule import Holodule
+
+CHROMEDRIVER = "/usr/bin/chromedriver"
 
 class HoloCrawler:
     def __init__(self, settings):
@@ -48,22 +50,6 @@ class HoloCrawler:
         self.__mongodb_host = "mongodb://%s/" % (settings.mongodb_host)
         # youtube url の判定パターン
         self.__youtube_url_pattern = settings.youtube_url_pattern
-
-    # Firefoxプロファイルの設定
-    def __setup_profile(self):
-        profile = webdriver.FirefoxProfile()
-        # その他（参考）
-        # profile.set_preference("browser.download.folderList", 1)
-        # profile.set_preference("browser.download.dir", "********")
-        # profile.set_preference("browser.download.manager.showWhenStarting", False)
-        # profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream-dummy")
-        # profile.set_preference("browser.helperApps.alwaysAsk.force", False)
-        # profile.set_preference("browser.download.manager.alertOnEXEOpen", False)
-        # profile.set_preference("browser.download.manager.focusWhenStarting", False)
-        # profile.set_preference("browser.download.manager.useWindow", False)
-        # profile.set_preference("browser.download.manager.showAlertOnComplete", False)
-        # profile.set_preference("browser.download.manager.closeWhenDone", False)
-        return profile
 
     # Firefoxオプションの設定
     def __setup_options(self):
@@ -180,12 +166,10 @@ class HoloCrawler:
     # ホロジュールのスクレイピングと Youtube 動画情報から、配信情報リストの取得
     def get_holodule_list(self):
         try:
-            # プロファイルのセットアップ
-            profile = self.__setup_profile()
             # オプションのセットアップ
             options = self.__setup_options()
             # ドライバの初期化（オプション（ヘッドレスモード）とプロファイルを指定）
-            self.__driver = webdriver.Firefox(options=options, firefox_profile=profile)
+            self.__driver = webdriver.Chrome(CHROMEDRIVER, options=options)
             # 指定したドライバに対して最大で10秒間待つように設定する
             self.__wait = WebDriverWait(self.__driver, 10)
             # ホロジュールの取得
