@@ -1,14 +1,29 @@
 """
 【ホロライブ】ホロジュールと Youtube の動画情報を取得して MongoDB へ登録する
 
-1. 事前に geckodriver をダウンロードして配置し PATH を設定しておく
-   geckodriver https://github.com/mozilla/geckodriver/releases
+1. 事前に google-chrome と chromedriver を導入しておく
+   cd /tmp
+   wget https://dl.google.com/linux/linux_signing_key.pub
+   sudo apt-key add linux_signing_key.pub
+   echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list
+   sudo apt update
+   sudo apt -f install -y
+   sudo apt install google-chrome-stable
+   google-chrome --version
+   sudo apt install chromium-chromedriver
+   chromedriver -v
+   which chromedriver
+   
 2. Google の YouTube Data API v3 を有効化して API キーを取得しておく
    Google Developer Console https://console.developers.google.com/?hl=JA
+
 3. .envファイルを作成し、URLやAPIキーを設定しておく
    参考 : .env.sample
+
 4. pyproject.toml を利用して Python のパッケージを一括インストールしておく
    参考 : pyproject.toml
+   python -m venv .venv
+   poetry install
 """
 
 import sys
