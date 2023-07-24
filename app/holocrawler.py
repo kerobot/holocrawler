@@ -2,6 +2,7 @@
 【ホロライブ】ホロジュールと Youtube の動画情報を取得して MongoDB へ登録する
 
 1. 事前に google-chrome と chromedriver を導入しておく
+   ※Windowsの場合はchromedriver.exeを配置する
    cd /tmp
    wget https://dl.google.com/linux/linux_signing_key.pub
    sudo apt-key add linux_signing_key.pub
@@ -48,6 +49,8 @@ from app.settings import Settings
 from app.holodule import Holodule
 
 CHROMEDRIVER = "/usr/bin/chromedriver"
+if os.name == "nt":
+    CHROMEDRIVER = "D:\Develop\Bin\WebDriver\chromedriver.exe"
 
 class HoloCrawler:
     def __init__(self, settings):
@@ -170,9 +173,17 @@ class HoloCrawler:
                 title = search_result["snippet"]["title"]
                 # 説明
                 description = search_result["snippet"]["description"]
-                # IDとタイトルと説明を返却
-                return (vid, title, description)
-            return ("","","")
+                # 投稿日
+                published_at = search_result["snippet"]["publishedAt"]
+                # チャンネルID
+                channel_id = search_result["snippet"]["channelId"]
+                # チャンネルタイトル
+                channel_title = search_result["snippet"]["channelTitle"]
+                # タグ（設定されていない＝キーが存在しない場合あり）
+                tags = search_result["snippet"].setdefault("tags", [])
+                # 取得した情報を返却
+                return (vid, title, description, published_at, channel_id, channel_title, tags)
+            return ("","","","","","",[])
         except:
             print("Unexpected error:", sys.exc_info()[0])
             print(youtube_url)
@@ -191,14 +202,26 @@ class HoloCrawler:
             holodule_list = self.__get_holodule()
             # Youtube情報の取得
             for holodule in holodule_list:
-                # video情報
-                video_info = self.__get_youtube_video_info(holodule.url)
-                # video_id
-                holodule.video_id = video_info[0]
-                # タイトル
-                holodule.title = video_info[1]
-                # 説明文（長いので100文字で切っている）
-                holodule.description = video_info[2].replace("\r","").replace("\n","").replace("\"","").replace("\'","")[:100]
+                try:
+                    # video情報
+                    video_info = self.__get_youtube_video_info(holodule.url)
+                    # video_id
+                    holodule.video_id = video_info[0]
+                    # タイトル
+                    holodule.title = video_info[1]
+                    # 説明文（長いので1000文字で切っている）
+                    holodule.description = video_info[2].replace("\r","").replace("\n","").replace("\"","").replace("\'","")[:1000]
+                    # 投稿日
+                    holodule.published_at = video_info[3]
+                    # チャンネルID
+                    holodule.channel_id = video_info[4]
+                    # チャンネルタイトル
+                    holodule.channel_title = video_info[5]
+                    # タグ
+                    holodule.tags = video_info[6]
+                except:
+                    print("Unexpected error:", sys.exc_info()[0])
+                    raise
             # 生成したリストを返す
             return holodule_list
         except OSError as err:
@@ -216,9 +239,20 @@ class HoloCrawler:
             # CSV出力(BOM付きUTF-8)
             with open(filepath, "w", newline="", encoding="utf_8_sig") as csvfile:
                 csvwriter = csv.writer(csvfile, delimiter=",")
-                csvwriter.writerow(["key", "video_id", "datetime", "name", "title", "url", "description"])
+                csvwriter.writerow(["key","code", "video_id", "datetime", "name", "title", "url", "description", "published_at", "channel_id", "channel_title", "tags"])
                 for holodule in holodule_list:
-                    csvwriter.writerow([holodule.key, holodule.video_id, holodule.datetime, holodule.name, holodule.title, holodule.url, holodule.description])
+                    csvwriter.writerow([holodule.key, 
+                                        holodule.code, 
+                                        holodule.video_id, 
+                                        holodule.datetime, 
+                                        holodule.name, 
+                                        holodule.title, 
+                                        holodule.url, 
+                                        holodule.description,
+                                        holodule.published_at,
+                                        holodule.channel_id,
+                                        holodule.channel_title,
+                                        holodule.tags])
         except OSError as err:
             print("OS error: {0}".format(err))
         except:

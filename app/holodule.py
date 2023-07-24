@@ -52,6 +52,10 @@ class Holodule:
         self.__title = ""
         self.__url = ""
         self.__description = ""
+        self.__published_at = ""
+        self.__channel_id = ""
+        self.__channel_title = ""
+        self.__tags = []
 
     # キー
     @property
@@ -119,6 +123,42 @@ class Holodule:
     def description(self, description):
         self.__description = description
 
+    # 投稿日（Youtubeから取得）
+    @property
+    def published_at(self):
+        return self.__published_at
+
+    @published_at.setter
+    def published_at(self, published_at):
+        self.__published_at = published_at
+
+    # チャンネルID（Youtubeから取得）
+    @property
+    def channel_id(self):
+        return self.__channel_id
+
+    @channel_id.setter
+    def channel_id(self, channel_id):
+        self.__channel_id = channel_id
+
+    # チャンネルタイトル（Youtubeから取得）
+    @property
+    def channel_title(self):
+        return self.__channel_title
+
+    @channel_title.setter
+    def channel_title(self, channel_title):
+        self.__channel_title = channel_title
+
+    # タグ（Youtubeから取得）
+    @property
+    def tags(self):
+        return self.__tags
+
+    @tags.setter
+    def tags(self, tags):
+        self.__tags = tags
+
     # ドキュメントへ変換
     def to_doc(self):
         doc = { 'key': str(self.key),
@@ -128,5 +168,9 @@ class Holodule:
                 'name' : str(self.name),
                 'title' : str(self.title),
                 'url' : str(self.url),
-                'description' : str(self.description) }
+                'description' : str(self.description),
+                'published_at' : str(self.published_at),
+                'channel_id' : str(self.channel_id),
+                'channel_title' : str(self.channel_title),
+                'tags' : str(self.tags)}
         return doc
