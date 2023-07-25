@@ -6,6 +6,5 @@ __pycache__/
 env/
 venv/
 .python-version
-/geckodriver.log
-/geckodriver.exe
+/chromedriver.exe
 log/
