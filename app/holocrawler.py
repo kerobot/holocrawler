@@ -3,29 +3,21 @@
 """
 
 import sys
-import os
 import csv
 import re
 import datetime
-import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from pymongo import MongoClient
 from urllib.parse import quote_plus
-from bson.objectid import ObjectId
 from app.settings import Settings
 from app.holodule import Holodule
-
-CHROMEDRIVER = "/usr/bin/chromedriver"
-if os.name == "nt":
-    CHROMEDRIVER = ".\chromedriver.exe"
 
 class HoloCrawler:
     def __init__(self, settings):
@@ -40,7 +32,7 @@ class HoloCrawler:
         # mongodbのパスワード
         self.__mongodb_password = quote_plus(settings.mongodb_password)
         # mongodbの接続情報
-        self.__mongodb_host = "mongodb://%s/" % (settings.mongodb_host)
+        self.__mongodb_holoduledb = "mongodb://%s:%s@%s/holoduledb" % (self.__mongodb_user, self.__mongodb_password, settings.mongodb_host)
         # youtube url の判定パターン
         self.__youtube_url_pattern = settings.youtube_url_pattern
 
@@ -170,7 +162,7 @@ class HoloCrawler:
             # オプションのセットアップ
             options = self.__setup_options()
             # ドライバの初期化（オプション（ヘッドレスモード）とプロファイルを指定）
-            self.__driver = webdriver.Chrome(CHROMEDRIVER, options=options)
+            self.__driver = webdriver.Chrome(options=options)
             # 指定したドライバに対して最大で10秒間待つように設定する
             self.__wait = WebDriverWait(self.__driver, 10)
             # ホロジュールの取得
@@ -206,7 +198,8 @@ class HoloCrawler:
             raise
         finally:
             # ドライバを閉じる
-            self.__driver.close()
+            if self.__driver != None:
+                self.__driver.close()
 
     # 配信情報リストのCSV出力
     def output_holodule_list(self, holodule_list, filepath):
@@ -240,9 +233,8 @@ class HoloCrawler:
     def register_holodule_list(self, holodule_list):
         try:
             # MongoDB のコレクションからの削除と挿入
-            client = MongoClient(self.__mongodb_host)
+            client = MongoClient(self.__mongodb_holoduledb)
             db = client.holoduledb
-            db.authenticate(name=self.__mongodb_user,password=self.__mongodb_password)
             collection = db.holodules
             for holodule in holodule_list:
                 # video_id を条件としたドキュメントの削除
