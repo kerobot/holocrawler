@@ -4,7 +4,7 @@ import argparse
 from os.path import join, dirname
 from app.settings import Settings
 from app.holocrawler import HoloCrawler
-from app.logger import log, get_logger
+from app.logger import get_logger
 
 RETURN_SUCCESS = 0
 RETURN_FAILURE = -1
@@ -14,7 +14,6 @@ json_path = join(dirname(__file__), "config/logger.json")
 log_dir = join(dirname(__file__), "log")
 logger = get_logger(log_dir, json_path, False)
 
-@log(logger)
 def main():
     # parser を作る（説明を指定できる）
     parser = argparse.ArgumentParser(description="ホロジュールのHTMLをSelenium + BeautifulSoup4 + Youtube API で解析して MongoDB へ登録")
@@ -29,9 +28,9 @@ def main():
     if csvpath is not None:
         # ディレクトリパスの取得と存在確認
         dirpath = os.path.dirname(csvpath)
-        logger.info(f"出力ディレクトリパス : {dirpath}")
+        logger.info("出力ディレクトリパス : %s", dirpath)
         if os.path.exists(dirpath) == False:
-            logger.error(f"出力するCSVファイルのディレクトリパスが存在しません。")
+            logger.error("出力するCSVファイルのディレクトリパスが存在しません。 : %s", dirpath)
             return RETURN_FAILURE
         is_output = True
 
@@ -40,20 +39,20 @@ def main():
         settings = Settings(join(dirname(__file__), '.env'))
         # HoloCrawler インスタンス
         holocrawler = HoloCrawler(settings)
+        logger.info("ホロジュールの取得を開始します。")
         # ホロジュールの取得
         holodule_list = holocrawler.get_holodule_list()
-        logger.info(f"ホロジュールを取得しました。 : {len(holodule_list)}件")
+        logger.info("ホロジュールを取得しました。 : %s件", len(holodule_list))
         # ホロジュールの登録
         holocrawler.register_holodule_list(holodule_list)
-        logger.info(f"ホロジュールを登録しました。")
+        logger.info("ホロジュールを登録しました。")
         # ホロジュールの出力
         if is_output == True:
             holocrawler.output_holodule_list(holodule_list, csvpath)
-            logger.info(f"ホロジュールを出力しました。 : {len(holodule_list)}件")
+            logger.info("ホロジュールを出力しました。 : %s件", len(holodule_list))
         return RETURN_SUCCESS
     except:
-        info = sys.exc_info()
-        print(info[1])
+        logger.error("エラーが発生しました。", exc_info=True)
         return RETURN_FAILURE
 
 if __name__ == "__main__":

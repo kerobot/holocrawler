@@ -6,6 +6,7 @@ import sys
 import csv
 import re
 import datetime
+from logging import getLogger, DEBUG, NullHandler
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,8 +22,18 @@ from app.holodule import Holodule
 
 class HoloCrawler:
     def __init__(self, settings):
+        self._logger = getLogger(__name__)
+        self._logger.addHandler(NullHandler())
+        self._logger.setLevel(DEBUG)
+        self._logger.propagate = True
         self.__driver = None
         self.__wait = None
+
+        self._logger.debug('HOLODULE_URL : %s', settings.holodule_url)
+        self._logger.debug('YOUTUBE_SETTING : %s, %s, %s', settings.api_service_name, settings.api_version, settings.api_key)
+        self._logger.debug('MONGODB_SETTING : %s, %s, %s', settings.mongodb_user, settings.mongodb_password, settings.mongodb_host)
+        self._logger.debug('YOUTUBE_PATTERN : %s', settings.youtube_url_pattern)
+
         # ホロジュールの URL
         self.__holodule_url = settings.holodule_url
         # YouTube Data API v3 を利用するための準備
@@ -56,7 +67,8 @@ class HoloCrawler:
         # タイトルの取得（確認用）
         head = soup.find("head")
         title = head.find("title").text
-        print(title)
+        self._logger.debug('TITLE : %s', title)
+        
         # TODO : ここからはページの構成に合わせて決め打ち = ページの構成が変わったら動かない
         # スケジュールの取得
         holodule_list = []
@@ -79,7 +91,6 @@ class HoloCrawler:
                 elif month == 1 and today.month == 12:
                     year = year + 1
                 date_string = f"{year}/{month}/{day}"
-                # print(date_string)
             # ライバー毎のスケジュール
             thumbnails = container.find_all("a", class_="thumbnail")
             if thumbnails is not None:
@@ -91,7 +102,6 @@ class HoloCrawler:
                         continue
                     else:
                         holodule.url = youtube_url
-                        # print(holodule.url)
                     # 時刻（先に取得しておいた日付と合体）
                     div_time = thumbnail.find("div", class_="col-4 col-sm-4 col-md-4 text-left datetime")
                     if div_time is None:
@@ -104,14 +114,12 @@ class HoloCrawler:
                         minute = int(times[1])
                         datetime_string = f"{date_string} {hour}:{minute}"
                         holodule.datetime = datetime.datetime.strptime(datetime_string, "%Y/%m/%d %H:%M")
-                        # print(holodule.datetime)
                     # ライバーの名前
                     div_name = thumbnail.find("div", class_="col text-right name")
                     if div_name is None:
                         continue
                     else:
                         holodule.name = div_name.text.strip()
-                        # print(holodule.name)
                     # リストに追加
                     if len(holodule.key) > 0:
                         holodule_list.append(holodule)
@@ -120,6 +128,7 @@ class HoloCrawler:
     # Youtube 動画情報の取得
     def __get_youtube_video_info(self, youtube_url):
         try:
+            self._logger.debug('YOUTUBE_URL : %s', youtube_url)
             # Youtube の URL から ID を取得
             match_video = re.search(r"^[^v]+v=(.{11}).*", youtube_url)
             video_id = match_video.group(1)
@@ -152,8 +161,7 @@ class HoloCrawler:
                 return (vid, title, description, published_at, channel_id, channel_title, tags)
             return ("","","","","","",[])
         except:
-            print("Unexpected error:", sys.exc_info()[0])
-            print(youtube_url)
+            self._logger.error("エラーが発生しました。", exc_info=True)
             raise
 
     # ホロジュールのスクレイピングと Youtube 動画情報から、配信情報リストの取得
@@ -187,14 +195,12 @@ class HoloCrawler:
                     # タグ
                     holodule.tags = video_info[6]
                 except:
-                    print("Unexpected error:", sys.exc_info()[0])
+                    self._logger.error("エラーが発生しました。", exc_info=True)
                     raise
             # 生成したリストを返す
             return holodule_list
-        except OSError as err:
-            print("OS error: {0}".format(err))
         except:
-            print("Unexpected error:", sys.exc_info()[0])
+            self._logger.error("エラーが発生しました。", exc_info=True)
             raise
         finally:
             # ドライバを閉じる
@@ -221,10 +227,8 @@ class HoloCrawler:
                                         holodule.channel_id,
                                         holodule.channel_title,
                                         holodule.tags])
-        except OSError as err:
-            print("OS error: {0}".format(err))
         except:
-            print("Unexpected error:", sys.exc_info()[0])
+            self._logger.error("エラーが発生しました。", exc_info=True)
             raise
         finally:
             pass
@@ -243,10 +247,8 @@ class HoloCrawler:
                 # ドキュメントの挿入
                 doc = holodule.to_doc()
                 collection.insert_one(doc)
-        except OSError as err:
-            print("OS error: {0}".format(err))
         except:
-            print("Unexpected error:", sys.exc_info()[0])
+            self._logger.error("エラーが発生しました。", exc_info=True)
             raise
         finally:
             pass
