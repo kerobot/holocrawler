@@ -6,8 +6,8 @@
 
 * Windows 11
 * Python 3.11
-* PowerShell 7.3
-* Visual Studio Code 1.80
+* PowerShell 7.3.8
+* Visual Studio Code 1.83
 * Git for Windows 2.41
 
 ## Poetry と pyenv の確認
@@ -27,9 +27,22 @@ pyenv 3.1.1
 1.6.0
 ```
 
+## MongoDB に接続できることを確認
+
+```powershell
+> mongosh localhost:27017/admin -u admin -p
+```
+
+## データベースを作成してロール（今回は dbOwner ）を設定
+
+```powershell
+MongoDB > use holoduledb
+MongoDB > db.createUser( { user:"owner", pwd:"password", roles:[{ "role" : "dbOwner", "db" : "holoduledb" }] } );
+```
+
 ## Web スクレイピングのために google-chrome と chromedriver を導入
 
-※ Windowsの場合はchromedriver.exeを配置する
+※ Ubuntu の場合（参考）
 
 ```bash
 cd /tmp
@@ -59,18 +72,43 @@ which chromedriver
 * .envファイルを作成する
 * .env.sampleを参考にURLやAPIキーを設定する
 
+## プロジェクトで利用する Python をインストール
+
+```powershell
+> pyenv install 3.11.1
+```
+
+## プロジェクトで利用するローカルの Python のバージョンを変更
+
+```powershell
+> pyenv local 3.11.1
+> Python -V
+Python 3.11.1
+```
+
+## バージョンを指定して、Python 仮想環境を作成
+
+```powershell
+> poetry env use python311
+```
+
 ## pyproject.toml を利用して Python のパッケージを一括インストール
 
 ```powershell
-> python -m venv .venv
 > poetry install
 ```
 
-## lounch.json の作成
+## プログラムの実行
+
+```powershell
+> poetry run python main.py --csvpath c:\temp\test.csv
+```
+
+## lounch.json の設定
 
 ```json
 {
-    "version": "0.2.0",
+    "version": "1.1.0",
     "configurations": [
         {
             "name": "Python: Current File",
@@ -82,10 +120,4 @@ which chromedriver
         }
     ]
 }
-```
-
-## プログラムの実行
-
-```powershell
-> poetry run python main.py --csvpath c:\temp\test.csv
 ```
