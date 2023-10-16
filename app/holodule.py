@@ -77,6 +77,7 @@ class Holodule:
         "Sana" : "HLEN17"
     }
 
+    # コンストラクタ
     def __init__(self):
         self.__video_id = ""
         self.__datetime = None
@@ -107,7 +108,7 @@ class Holodule:
         return self.__video_id
 
     @video_id.setter
-    def video_id(self, video_id):
+    def video_id(self, video_id: str):
         self.__video_id = video_id
 
     # 日時
@@ -116,7 +117,7 @@ class Holodule:
         return self.__datetime
 
     @datetime.setter
-    def datetime(self, datetime):
+    def datetime(self, datetime: str):
         self.__datetime = datetime
 
     # 名前
@@ -125,7 +126,7 @@ class Holodule:
         return self.__name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str):
         self.__name = name
 
     # タイトル（Youtubeから取得）
@@ -134,7 +135,7 @@ class Holodule:
         return self.__title
 
     @title.setter
-    def title(self, title):
+    def title(self, title: str):
         self.__title = title
 
     # URL
@@ -143,7 +144,7 @@ class Holodule:
         return self.__url
 
     @url.setter
-    def url(self, url):
+    def url(self, url: str):
         self.__url = url
 
     # 説明（Youtubeから取得）
@@ -152,7 +153,7 @@ class Holodule:
         return self.__description
 
     @description.setter
-    def description(self, description):
+    def description(self, description: str):
         self.__description = description
 
     # 投稿日（Youtubeから取得）
@@ -161,7 +162,7 @@ class Holodule:
         return self.__published_at
 
     @published_at.setter
-    def published_at(self, published_at):
+    def published_at(self, published_at: str):
         self.__published_at = published_at
 
     # チャンネルID（Youtubeから取得）
@@ -170,7 +171,7 @@ class Holodule:
         return self.__channel_id
 
     @channel_id.setter
-    def channel_id(self, channel_id):
+    def channel_id(self, channel_id: str):
         self.__channel_id = channel_id
 
     # チャンネルタイトル（Youtubeから取得）
@@ -179,7 +180,7 @@ class Holodule:
         return self.__channel_title
 
     @channel_title.setter
-    def channel_title(self, channel_title):
+    def channel_title(self, channel_title: str):
         self.__channel_title = channel_title
 
     # タグ（Youtubeから取得）
@@ -188,7 +189,7 @@ class Holodule:
         return self.__tags
 
     @tags.setter
-    def tags(self, tags):
+    def tags(self, tags: str):
         self.__tags = tags
 
     # ドキュメントへ変換

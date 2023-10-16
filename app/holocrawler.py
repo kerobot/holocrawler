@@ -21,7 +21,8 @@ from app.settings import Settings
 from app.holodule import Holodule
 
 class HoloCrawler:
-    def __init__(self, settings):
+    # コンストラクタ
+    def __init__(self, settings: Settings):
         self._logger = getLogger(__name__)
         self._logger.addHandler(NullHandler())
         self._logger.setLevel(DEBUG)
@@ -47,7 +48,7 @@ class HoloCrawler:
         # youtube url の判定パターン
         self.__youtube_url_pattern = settings.youtube_url_pattern
 
-    # Firefoxオプションの設定
+    # ブラウザオプションの設定
     def __setup_options(self):
         options = Options()
         # ヘッドレスモードとする
@@ -126,7 +127,7 @@ class HoloCrawler:
         return holodule_list
 
     # Youtube 動画情報の取得
-    def __get_youtube_video_info(self, youtube_url):
+    def __get_youtube_video_info(self, youtube_url: str):
         try:
             self._logger.debug('YOUTUBE_URL : %s', youtube_url)
             # Youtube の URL から ID を取得
@@ -208,7 +209,7 @@ class HoloCrawler:
                 self.__driver.close()
 
     # 配信情報リストのCSV出力
-    def output_holodule_list(self, holodule_list, filepath):
+    def output_holodule_list(self, holodule_list: list[Holodule], filepath: str):
         try:
             # CSV出力(BOM付きUTF-8)
             with open(filepath, "w", newline="", encoding="utf_8_sig") as csvfile:
@@ -234,7 +235,7 @@ class HoloCrawler:
             pass
 
     # 配信情報リストのDB登録
-    def register_holodule_list(self, holodule_list):
+    def register_holodule_list(self, holodule_list: list[Holodule]):
         try:
             # MongoDB のコレクションからの削除と挿入
             client = MongoClient(self.__mongodb_holoduledb)

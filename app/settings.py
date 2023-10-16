@@ -1,9 +1,14 @@
+"""
+環境変数（.env）からの設定値の取得
+"""
+
 import os
 import urllib.request
 from dotenv import load_dotenv
 
 class Settings:
-    def __init__(self, envpath):
+    # コンストラクタ
+    def __init__(self, envpath: str):
         # .env ファイルを明示的に指定して環境変数として読み込む
         self.__dotenv_path = envpath
         load_dotenv(self.__dotenv_path)
@@ -60,7 +65,7 @@ class Settings:
         return self.__youtube_url_pattern
 
     # 指定したURLにアクセスできるかをチェック
-    def __check_url(self, url):
+    def __check_url(self, url: str):
         try:
             with urllib.request.urlopen(url):
                 return True
