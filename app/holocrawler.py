@@ -5,6 +5,7 @@
 import csv
 import re
 import datetime
+import pymongo.errors
 from logging import getLogger, DEBUG, NullHandler
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -131,6 +132,10 @@ class HoloCrawler:
             self._logger.info('YOUTUBE_URL : %s', youtube_url)
             # Youtube の URL から ID を取得
             match_video = re.search(r"^[^v]+v=(.{11}).*", youtube_url)
+            if not match_video:
+                self._logger.error("YouTube URL が不正です。")
+                return None
+            
             video_id = match_video.group(1)
             # Youtube はスクレイピングを禁止しているので YouTube Data API (v3) で情報を取得
             search_response = self.__youtube.videos().list(
@@ -141,6 +146,7 @@ class HoloCrawler:
                 # 1件のみ取得
                 maxResults=1
             ).execute()
+
             # 検索結果から情報を取得
             for search_result in search_response.get("items", []):
                 # id
@@ -159,9 +165,15 @@ class HoloCrawler:
                 tags = search_result["snippet"].setdefault("tags", [])
                 # 取得した情報を返却
                 return (vid, title, description, published_at, channel_id, channel_title, tags)
-            return ("","","","","","",[])
-        except:
-            self._logger.error("エラーが発生しました。", exc_info=True)
+
+            self._logger.error("指定したIDに一致する動画がありません。")
+            return None            
+
+        except HttpError as e:
+            self._logger.error("HTTP エラー %d が発生しました。%s" % (e.resp.status, e.content))
+            raise
+        except Exception as e:
+            self._logger.error("エラーが発生しました。%s" % e)
             raise
 
     # ホロジュールのスクレイピングと Youtube 動画情報から、配信情報リストの取得
@@ -178,16 +190,21 @@ class HoloCrawler:
             # Youtube情報の取得
             for holodule in holodule_list:
                 try:
+                    self._logger.info('VIDEO_STREAMER : %s', holodule.name)
+                    self._logger.info('VIDEO_DATETIME : %s', holodule.datetime)
+
                     # video情報
                     video_info = self.__get_youtube_video_info(holodule.url)
-                    self._logger.info('VIDEO_STREAMER : %s', holodule.name)
+                    if video_info == None:
+                        continue
+
                     # video_id
                     holodule.video_id = video_info[0]
                     # タイトル
                     holodule.title = video_info[1]
                     self._logger.info('VIDEO_TITLE : %s', holodule.title)
                     # 説明文（長いので1000文字で切っている）
-                    holodule.description = video_info[2].replace("\r","").replace("\n","").replace("\"","").replace("\'","")[:1000]
+                    holodule.description = re.sub(r'[\r\n\"\']', '', video_info[2])[:1000]
                     # 投稿日
                     holodule.published_at = video_info[3]
                     # チャンネルID
@@ -196,18 +213,17 @@ class HoloCrawler:
                     holodule.channel_title = video_info[5]
                     # タグ
                     holodule.tags = video_info[6]
-                except:
+                except Exception as e:
                     self._logger.error("エラーが発生しました。", exc_info=True)
-                    raise
-            # 生成したリストを返す
-            return holodule_list
-        except:
+                    raise e
+        except Exception as e:
             self._logger.error("エラーが発生しました。", exc_info=True)
-            raise
+            raise e
         finally:
             # ドライバを閉じる
-            if self.__driver != None:
+            if self.__driver is not None and len(self.__driver.window_handles) > 0:
                 self.__driver.close()
+        return holodule_list
 
     # 配信情報リストのCSV出力
     def output_holodule_list(self, holodule_list: list[Holodule], filepath: str):
@@ -215,42 +231,26 @@ class HoloCrawler:
             # CSV出力(BOM付きUTF-8)
             with open(filepath, "w", newline="", encoding="utf_8_sig") as csvfile:
                 csvwriter = csv.writer(csvfile, delimiter=",")
-                csvwriter.writerow(["key","code", "video_id", "datetime", "name", "title", "url", "description", "published_at", "channel_id", "channel_title", "tags"])
+                csvwriter.writerow([attr for attr in vars(Holodule())])
                 for holodule in holodule_list:
-                    csvwriter.writerow([holodule.key, 
-                                        holodule.code, 
-                                        holodule.video_id, 
-                                        holodule.datetime, 
-                                        holodule.name, 
-                                        holodule.title, 
-                                        holodule.url, 
-                                        holodule.description,
-                                        holodule.published_at,
-                                        holodule.channel_id,
-                                        holodule.channel_title,
-                                        holodule.tags])
-        except:
-            self._logger.error("エラーが発生しました。", exc_info=True)
+                    csvwriter.writerow([value for value in vars(holodule).values()])
+        except (FileNotFoundError, PermissionError) as e:
+            self._logger.error("CSV エラーが発生しました。%s", e, exc_info=True)
             raise
-        finally:
-            pass
 
     # 配信情報リストのDB登録
     def register_holodule_list(self, holodule_list: list[Holodule]):
+        client = MongoClient(self.__mongodb_holoduledb)
         try:
-            # MongoDB のコレクションからの削除と挿入
-            client = MongoClient(self.__mongodb_holoduledb)
-            db = client.holoduledb
-            collection = db.holodules
-            for holodule in holodule_list:
-                # video_id を条件としたドキュメントの削除
-                video_id = holodule.video_id
-                collection.delete_one( {"video_id":video_id} )
-                # ドキュメントの挿入
-                doc = holodule.to_doc()
-                collection.insert_one(doc)
-        except:
-            self._logger.error("エラーが発生しました。", exc_info=True)
+            collection = client.holoduledb.holodules
+            # video_id を指定して一括削除
+            video_ids = [holodule.video_id for holodule in holodule_list]
+            collection.delete_many({"video_id": {"$in": video_ids}})
+            # ドキュメントを一括挿入
+            docs = [holodule.to_doc() for holodule in holodule_list]
+            collection.insert_many(docs)
+        except pymongo.errors.PyMongoError as e:
+            self._logger.error("MongoDB エラーが発生しました。%s", e, exc_info=True)
             raise
         finally:
-            pass
+            client.close()
