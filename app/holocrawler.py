@@ -2,7 +2,6 @@
 【ホロライブ】ホロジュールと Youtube の動画情報を取得して MongoDB へ登録する
 """
 
-import sys
 import csv
 import re
 import datetime
@@ -13,8 +12,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from apiclient.discovery import build
-from apiclient.errors import HttpError
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from pymongo import MongoClient
 from urllib.parse import quote_plus
 from app.settings import Settings
@@ -68,7 +67,7 @@ class HoloCrawler:
         # タイトルの取得（確認用）
         head = soup.find("head")
         title = head.find("title").text
-        self._logger.debug('TITLE : %s', title)
+        self._logger.info('TITLE : %s', title)
         
         # TODO : ここからはページの構成に合わせて決め打ち = ページの構成が変わったら動かない
         # スケジュールの取得
@@ -129,7 +128,7 @@ class HoloCrawler:
     # Youtube 動画情報の取得
     def __get_youtube_video_info(self, youtube_url: str):
         try:
-            self._logger.debug('YOUTUBE_URL : %s', youtube_url)
+            self._logger.info('YOUTUBE_URL : %s', youtube_url)
             # Youtube の URL から ID を取得
             match_video = re.search(r"^[^v]+v=(.{11}).*", youtube_url)
             video_id = match_video.group(1)
@@ -181,10 +180,12 @@ class HoloCrawler:
                 try:
                     # video情報
                     video_info = self.__get_youtube_video_info(holodule.url)
+                    self._logger.info('VIDEO_STREAMER : %s', holodule.name)
                     # video_id
                     holodule.video_id = video_info[0]
                     # タイトル
                     holodule.title = video_info[1]
+                    self._logger.info('VIDEO_TITLE : %s', holodule.title)
                     # 説明文（長いので1000文字で切っている）
                     holodule.description = video_info[2].replace("\r","").replace("\n","").replace("\"","").replace("\'","")[:1000]
                     # 投稿日
