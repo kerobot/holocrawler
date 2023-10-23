@@ -82,7 +82,7 @@ which chromedriver
 
 ```powershell
 > pyenv local 3.11.1
-> Python -V
+> python -V
 Python 3.11.1
 ```
 
