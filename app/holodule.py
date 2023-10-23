@@ -2,6 +2,9 @@
 ホロジュールの配信情報＋Youtubeの動画情報含む
 """
 
+import datetime
+from typing import List, NoReturn
+
 class Holodule:
     codes = {
         "ホロライブ" : "HL0000",
@@ -78,122 +81,122 @@ class Holodule:
     }
 
     # コンストラクタ
-    def __init__(self):
-        self.__video_id = ""
-        self.__datetime = None
-        self.__name = ""
-        self.__title = ""
-        self.__url = ""
-        self.__description = ""
-        self.__published_at = ""
-        self.__channel_id = ""
-        self.__channel_title = ""
-        self.__tags = []
+    def __init__(self, video_id: str = "", datetime: datetime = None, name: str = "", title: str = "", url: str = "", description: str = "", published_at: str = "", channel_id: str = "", channel_title: str = "", tags: List[str] = []):
+        self.__video_id = video_id
+        self.__datetime = datetime
+        self.__name = name
+        self.__title = title
+        self.__url = url
+        self.__description = description
+        self.__published_at = published_at
+        self.__channel_id = channel_id
+        self.__channel_title = channel_title
+        self.__tags = tags
 
     # キー
     @property
-    def key(self):
+    def key(self) -> str:
         _code = self.code;
         _dttm = self.datetime.strftime("%Y%m%d_%H%M%S") if self.datetime is not None else ""
         return _code + "_" + _dttm if ( len(_code) > 0 and len(_dttm) > 0 ) else ""
 
     # コード
     @property
-    def code(self):
+    def code(self) -> str:
         return Holodule.codes[self.name] if self.name in Holodule.codes else ""
 
     # video_id
     @property
-    def video_id(self):
+    def video_id(self) -> str:
         return self.__video_id
 
     @video_id.setter
-    def video_id(self, video_id: str):
+    def video_id(self, video_id: str) -> NoReturn:
         self.__video_id = video_id
 
     # 日時
     @property
-    def datetime(self):
+    def datetime(self) -> datetime:
         return self.__datetime
 
     @datetime.setter
-    def datetime(self, datetime: str):
+    def datetime(self, datetime: datetime) -> NoReturn:
         self.__datetime = datetime
 
     # 名前
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
 
     @name.setter
-    def name(self, name: str):
+    def name(self, name: str) -> NoReturn:
         self.__name = name
 
     # タイトル（Youtubeから取得）
     @property
-    def title(self):
+    def title(self) -> str:
         return self.__title
 
     @title.setter
-    def title(self, title: str):
+    def title(self, title: str) -> NoReturn:
         self.__title = title
 
     # URL
     @property
-    def url(self):
+    def url(self) -> str:
         return self.__url
 
     @url.setter
-    def url(self, url: str):
+    def url(self, url: str) -> NoReturn:
         self.__url = url
 
     # 説明（Youtubeから取得）
     @property
-    def description(self):
+    def description(self) -> str:
         return self.__description
 
     @description.setter
-    def description(self, description: str):
+    def description(self, description: str) -> NoReturn:
         self.__description = description
 
     # 投稿日（Youtubeから取得）
     @property
-    def published_at(self):
+    def published_at(self) -> str:
         return self.__published_at
 
     @published_at.setter
-    def published_at(self, published_at: str):
+    def published_at(self, published_at: str) -> NoReturn:
         self.__published_at = published_at
 
     # チャンネルID（Youtubeから取得）
     @property
-    def channel_id(self):
+    def channel_id(self) -> str:
         return self.__channel_id
 
     @channel_id.setter
-    def channel_id(self, channel_id: str):
+    def channel_id(self, channel_id: str) -> NoReturn:
         self.__channel_id = channel_id
 
     # チャンネルタイトル（Youtubeから取得）
     @property
-    def channel_title(self):
+    def channel_title(self) -> str:
         return self.__channel_title
 
     @channel_title.setter
-    def channel_title(self, channel_title: str):
+    def channel_title(self, channel_title: str) -> NoReturn:
         self.__channel_title = channel_title
 
     # タグ（Youtubeから取得）
     @property
-    def tags(self):
+    def tags(self) -> str:
         return self.__tags
 
     @tags.setter
-    def tags(self, tags: str):
+    def tags(self, tags: str) -> NoReturn:
         self.__tags = tags
 
     # ドキュメントへ変換
-    def to_doc(self):
+    def to_doc(self) -> dict[str, str]:
         doc = { 'key': str(self.key),
                 'code' : str(self.code),
                 'video_id': str(self.video_id),
