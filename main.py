@@ -18,7 +18,7 @@ def main():
     # parser を作る（説明を指定できる）
     parser = argparse.ArgumentParser(description="ホロジュールのHTMLをSelenium + BeautifulSoup4 + Youtube API で解析して MongoDB へ登録")
     # コマンドライン引数を設定する（説明を指定できる）
-    parser.add_argument("--csvpath", nargs="?", default="output.csv", help="出力するCSVファイルのパス（デフォルト: output.csv）")
+    parser.add_argument("--csvpath", nargs="?", help="出力するCSVファイルのパス")
     # コマンドライン引数を解析する
     args = parser.parse_args()
 
