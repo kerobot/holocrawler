@@ -50,7 +50,11 @@ MongoDB > db.users.find();
 
 ## Web スクレイピングのために google-chrome と chromedriver を導入
 
-※ Ubuntu の場合（参考）
+※ Windows の場合
+
+最新の Google Chrome をインストールしておく
+
+※ Ubuntu の場合
 
 ```bash
 cd /tmp
@@ -61,9 +65,11 @@ sudo apt update
 sudo apt -f install -y
 sudo apt install google-chrome-stable
 google-chrome --version
-sudo apt install chromium-chromedriver
-chromedriver -v
-which chromedriver
+
+# chromedriver のインストールは不要（Selenium 4.6 から、Selenium自体にChromeDriver自動更新機能「Selenium Manager」が搭載されたため）
+# sudo apt install chromium-chromedriver
+# chromedriver -v
+# which chromedriver
 ```
 
 ## YouTube 動画情報を取得するための YouTube Data API v3 を有効化して API キーを取得
@@ -98,6 +104,7 @@ Python 3.11.1
 
 ```powershell
 > poetry env use python311
+> または python -m venv .venv
 ```
 
 ## pyproject.toml を利用して Python のパッケージを一括インストール
