@@ -40,6 +40,14 @@ MongoDB > use holoduledb
 MongoDB > db.createUser( { user:"owner", pwd:"password", roles:[{ "role" : "dbOwner", "db" : "holoduledb" }] } );
 ```
 
+## Web API からアクセスする際のユーザー情報を登録（参考）
+
+```powershell
+MongoDB > db.createCollection("users");
+MongoDB > db.users.save( {"id":"1", "username":"dummy", "password":"dummy", "firstname":"dummy", "lastname":"dummy"} );
+MongoDB > db.users.find();
+```
+
 ## Web スクレイピングのために google-chrome と chromedriver を導入
 
 ※ Ubuntu の場合（参考）
@@ -108,7 +116,7 @@ Python 3.11.1
 
 ```json
 {
-    "version": "1.1.0",
+    "version": "1.0.0",
     "configurations": [
         {
             "name": "Python: Current File",
