@@ -127,7 +127,7 @@ class HoloCrawler:
                     streamer = self.__streamers.get_streamer_by_name(stream_name)
                     if streamer is None:
                         continue
-                    holodule = Holodule(streamer.code, stream_url, stream_datetime, streamer.name)
+                    holodule = Holodule(streamer.code, stream_url, stream_datetime, stream_name)
                     holodules.append(holodule)
         return holodules
 
