@@ -8,7 +8,6 @@ from logging import getLogger, DEBUG, NullHandler
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from googleapiclient.discovery import build
@@ -56,9 +55,9 @@ class HoloCrawler:
 
     # ブラウザオプションの設定
     def __setup_options(self):
-        options = Options()
+        options = webdriver.ChromeOptions()
         # ヘッドレスモードとする
-        options.add_argument("--headless")
+        options.add_argument('--headless=new')
         return options
 
     # ホロジュールの取得
