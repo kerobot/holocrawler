@@ -1,6 +1,9 @@
-from . import settings
-from . import holodule
 from . import holocrawler
+from . import holodule
+from . import holodules
 from . import logger
+from . import settings
+from . import streamer
+from . import streamers
 
-__version__ = '0.1.0'
+__version__ = '1.0.0'

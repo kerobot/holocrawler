@@ -35,21 +35,21 @@ def main():
         is_output = True
 
     try:
-        # Settings インスタンス
+        # Settingsオブジェクト
         settings = Settings(join(dirname(__file__), '.env'))
-        # HoloCrawler インスタンス
+        # HoloCrawlerオブジェクト
         holocrawler = HoloCrawler(settings)
         logger.info("ホロジュールの取得を開始します。")
         # ホロジュールの取得
-        holodule_list = holocrawler.get_holodule_list()
-        logger.info("ホロジュールを取得しました。 : %s件", len(holodule_list))
+        holodules = holocrawler.get_holodules()
+        logger.info("ホロジュールを取得しました。 : %s件", len(holodules))
         # ホロジュールの登録
-        holocrawler.register_holodule_list(holodule_list)
+        holocrawler.save_to_mongodb()
         logger.info("ホロジュールを登録しました。")
         # ホロジュールの出力
         if is_output == True:
-            holocrawler.output_holodule_list(holodule_list, csvpath)
-            logger.info("ホロジュールを出力しました。 : %s件", len(holodule_list))
+            holocrawler.output_to_csv(csvpath)
+            logger.info("ホロジュールを出力しました。 : %s件", len(holodules))
         return RETURN_SUCCESS
     except:
         logger.error("エラーが発生しました。", exc_info=True)
