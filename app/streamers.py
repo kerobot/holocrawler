@@ -1,14 +1,22 @@
 import pymongo
 from app.streamer import Streamer
 from logging import getLogger, DEBUG, NullHandler
+from typing import Dict, Optional
 
 class Streamers:
+    """
+    Streamersクラスは、ホロライブの各配信者の情報を保持するためのクラスです。
+    クラス変数として、各配信者の情報を保持する辞書型のstreamersを持ちます。
+    """
     def __init__(self):
+        """
+        Streamersクラスのインスタンスを生成します。
+        """
         self._logger = getLogger(__name__)
         self._logger.addHandler(NullHandler())
         self._logger.setLevel(DEBUG)
         self._logger.propagate = True
-        self.streamers = {
+        self.streamers: Dict[str, Streamer] = {
             "ホロライブ" : Streamer("HL0000", "ホロライブ", "hololive", ["bland","jp"], "hololive.jpg", "@hololive"),
 
             "ときのそら" : Streamer("HL0001", "ときのそら", "hololive", ["gen0","jp"], "tokino_sora.jpg", "@TokinoSora"),
@@ -95,13 +103,42 @@ class Streamers:
             "FUWAMOCO" : Streamer("HLEN15", "FUWAMOCO", "hololive_en", ["gen3","en"], "fuwamoco.jpg", "@FUWAMOCOch"),
         }
 
-    def get_streamer_by_name(self, name: str) -> Streamer:
+    def get_streamer_by_name(self, name: str) -> Optional[Streamer]:
+        """
+        指定された短縮名と一致する配信者情報を取得します。
+
+        Args:
+            name (str): 配信者の短縮名（ホロジュール名）。
+
+        Returns:
+            Optional[Streamer]: 配信者が存在する場合は Streamer オブジェクトを返します。存在しない場合はNoneを返します。
+        """
         return self.streamers.get(name, None)
 
-    def save_to_mongodb(self, uri: str, db_name: str, collection_name: str):
-        client = pymongo.MongoClient(uri)
-        db = client[db_name]
-        collection = db[collection_name]
-        for _, streamer in self.streamers.items():
-            data = streamer.to_dict()
-            collection.replace_one({"code": streamer.code}, data, upsert=True)
+    def save_to_mongodb(self, uri: str, db_name: str, collection_name: str) -> None:
+        """
+        MongoDBに配信者情報を保存する。
+
+        :param uri: MongoDBのURI。
+        :param db_name: データベース名。
+        :param collection_name: コレクション名。
+        :return: None。
+        """
+        try:
+            client = pymongo.MongoClient(uri)
+            db = client[db_name]
+            collection = db[collection_name]
+            for _, streamer in self.streamers.items():
+                data = streamer.to_dict()
+                collection.replace_one({"code": streamer.code}, data, upsert=True)
+        except pymongo.errors.ConnectionError as e:
+            self._logger.error("MongoDB 接続に失敗しました。%s", e, exc_info=True)
+            raise
+        except pymongo.errors.OperationFailure as e:
+            self._logger.error("MongoDB 操作に失敗しました。%s", e, exc_info=True)
+            raise
+        except pymongo.errors.PyMongoError as e:
+            self._logger.error("MongoDB エラーが発生しました。%s", e, exc_info=True)
+            raise
+        finally:
+            client.close()

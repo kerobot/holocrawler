@@ -1,73 +1,136 @@
-"""
-環境変数（.env）からの設定値の取得
-"""
-
 import os
 import urllib.request
 from dotenv import load_dotenv
 
 class Settings:
-    # コンストラクタ
-    def __init__(self, envpath: str):
-        # .env ファイルを明示的に指定して環境変数として読み込む
-        self.__dotenv_path = envpath
-        load_dotenv(self.__dotenv_path)
-        # 環境変数から設定値を取得
-        self.__holodule_url = os.environ.get("HOLODULE_URL")
-        if self.__check_url(self.__holodule_url) == False:
-            raise ValueError("指定したURLにアクセスできません。")
-        self.__api_key = os.environ.get("API_KEY")
-        self.__api_service_name = os.environ.get("API_SERVICE_NAME")
-        self.__api_version = os.environ.get("API_VERSION")
-        self.__mongodb_user = os.environ.get("MONGODB_USER")
-        self.__mongodb_password = os.environ.get("MONGODB_PASSWORD")
-        self.__mongodb_host = os.environ.get("MONGODB_HOST")
-        self.__youtube_url_pattern = os.environ.get("YOUTUBE_URL_PATTERN")
+    def __init__(self, envpath: str) -> None:
+        """
+        Settingsクラスのコンストラクタ
 
-    # ホロジュールのURL
+        :param envpath: .envファイルのパス
+        """
+        self.env_path: str = envpath
+        self.__load_env()
+
+        self.__holodule_url: str = self.__get_env("HOLODULE_URL")
+        self.__api_key: str = self.__get_env("API_KEY")
+        self.__api_service_name: str = self.__get_env("API_SERVICE_NAME")
+        self.__api_version: str = self.__get_env("API_VERSION")
+        self.__mongodb_user: str = self.__get_env("MONGODB_USER")
+        self.__mongodb_password: str = self.__get_env("MONGODB_PASSWORD")
+        self.__mongodb_host: str = self.__get_env("MONGODB_HOST")
+        self.__youtube_url_pattern: str = self.__get_env("YOUTUBE_URL_PATTERN")
+
     @property
-    def holodule_url(self):
+    def holodule_url(self) -> str:
+        """
+        ホロジュールのURLを取得する
+
+        :return: ホロジュールのURL
+        """
         return self.__holodule_url
 
-    # Youtube Data API v3 の APIキー
     @property
-    def api_key(self):
+    def api_key(self) -> str:
+        """
+        Youtube Data API v3 のAPIキーを取得する
+
+        :return: APIキー
+        """
         return self.__api_key
 
-    # Youtube Data API v3 の APIサービス名
     @property
-    def api_service_name(self):
+    def api_service_name(self) -> str:
+        """
+        Youtube Data API v3 のAPIサービス名を取得する
+
+        :return: APIサービス名
+        """
         return self.__api_service_name
 
-    # Youtube Data API v3 の APIバージョン
     @property
-    def api_version(self):
+    def api_version(self) -> str:
+        """
+        Youtube Data API v3 のAPIバージョンを取得する
+
+        :return: APIバージョン
+        """
         return self.__api_version
 
-    # mongodb の ユーザー
     @property
-    def mongodb_user(self):
+    def mongodb_user(self) -> str:
+        """
+        MongoDBのユーザーを取得する
+
+        :return: MongoDBのユーザー
+        """
         return self.__mongodb_user
 
-    # mongodb の パスワード
     @property
-    def mongodb_password(self):
+    def mongodb_password(self) -> str:
+        """
+        MongoDBのパスワードを取得する
+
+        :return: MongoDBのパスワード
+        """
         return self.__mongodb_password
 
-    # mongodb の ホスト:ポート
     @property
-    def mongodb_host(self):
+    def mongodb_host(self) -> str:
+        """
+        MongoDBのホスト:ポートを取得する
+
+        :return: MongoDBのホスト:ポート
+        """
         return self.__mongodb_host
 
-    # Youtube URL として判定するパターン
     @property
-    def youtube_url_pattern(self):
+    def youtube_url_pattern(self) -> str:
+        """
+        Youtube URL として判定するパターンを取得する
+
+        :return: Youtube URL として判定するパターン
+        """
         return self.__youtube_url_pattern
 
-    # 指定したURLにアクセスできるかをチェック
-    def __check_url(self, url: str):
+    def __load_env(self) -> None:
+        """
+        .envファイルを読み込む
+        """
         try:
-            with urllib.request.urlopen(url):
+            load_dotenv(self.env_path)
+        except Exception as e:
+            raise ValueError(f"Failed to load .env file: {e}")
+
+    def __get_env(self, key: str) -> str:
+        """
+        環境変数を取得する
+
+        :param key: 環境変数のキー
+        :return: 環境変数の値
+        """
+        value = os.environ.get(key)
+        if value is None:
+            raise ValueError(f"Missing environment variable: {key}")
+        return value
+
+    async def __check_url(self, url: str) -> bool:
+        """
+        指定したURLにアクセスできるかをチェックする
+
+        :param url: チェックするURL
+        :return: アクセスできる場合はTrue、できない場合はFalse
+        """
+        try:
+            async with urllib.request.urlopen(url) as response:
                 return True
-        except urllib.request.HTTPError:
+        except Exception:
             return False
+
+    async def check_holodule_url(self) -> bool:
+        """
+        ホロジュールのURLにアクセスできるかをチェックする
+
+        :return: アクセスできる場合はTrue、できない場合はFalse
+        """
+        return await self.__check_url(self.__holodule_url)

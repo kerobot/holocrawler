@@ -1,14 +1,21 @@
-"""
-ログ出力の設定とロガーインスタンスの生成
-"""
-
+from typing import Optional
+from logging import Logger, config, getLogger
 import json
 import datetime
 from os.path import join
-from logging import Logger, config, getLogger
 
-# ログ出力の設定とロガーインスタンスの生成
-def get_logger(log_dir: str, json_path: str, verbose: bool=False) -> Logger:
+def get_logger(log_dir: str, json_path: str, verbose: bool=False) -> Optional[Logger]:
+    """
+    ロガーを取得する関数
+
+    Args:
+        log_dir (str): ログファイルを保存するディレクトリのパス
+        json_path (str): ログ設定を記述したJSONファイルのパス
+        verbose (bool, optional): ログレベルをDEBUGにするかどうかのフラグ。デフォルトはFalse。
+
+    Returns:
+        Optional[Logger]: ロガーオブジェクト。設定ファイルが存在しない場合や、設定ファイルの形式が不正な場合はNoneを返す。
+    """
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             log_config = json.load(f)
